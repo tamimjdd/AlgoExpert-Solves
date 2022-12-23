@@ -1,0 +1,103 @@
+Stable internships
+A company has hired N interns to each join one of N different teams. Each intern has ranked their preferences for which teams they wish to join, and each team has ranked their preferences for which interns they prefer.
+
+Given these preferences, assign 1 intern to each team. These assignments should be "stable," meaning that there is no unmatched pair of an intern and a team such that both that intern and that team would prefer they be matched with each other.
+
+In the case there are multiple valid stable matchings, the solution that is most optimal for the interns should be chosen (i.e. every intern should be matched with the best team possible for them).
+
+Your function should take in 2 2-dimensional lists, one for interns and one for teams. Each inner list represents a single intern or team's preferences, ranked from most preferable to least preferable. These lists will always be of length N, with integers as elements. Each of these integers corresponds to the index of the team/intern being ranked. Your function should return a 2-dimensional list of matchings in no particular order. Each matching should be in the format [internIndex, teamIndex].
+
+Sample Input
+interns = [
+  [0, 1, 2],
+  [1, 0, 2],
+  [1, 2, 0]
+]
+teams = [
+  [2, 1, 0],
+  [1, 2, 0],
+  [0, 2, 1]
+]
+Sample Output
+// This is the most optimal solution for interns
+[
+  [0, 0],
+  [1, 1],
+  [2, 2]
+]
+// This is also a stable matching, but it is suboptimal for the interns
+// because interns 0 and 2 could have been given better team matchings
+[
+  [2, 0],
+  [1, 1],
+  [0, 2]
+]
+Hints
+Hint 1
+Try starting out by solving the most basic version of this problem. What would you do if every intern had a unique first choice?
+
+Hint 2
+If two interns had the same first choice, how can you decide which intern gets that team to keep the matchings stable?
+
+Hint 3
+To optimize performance, it might be helpful to first convert the input into a different data structure.
+
+Optimal Space & Time Complexity
+O(n^2) time | O(n^2) space - where n is the number of interns
+
+c++ solution:
+
+#include<bits/stdc++.h>
+using namespace std;
+
+
+vector<vector<int>> stableInternships(vector<vector<int>> interns, vector<vector<int>> teams) {
+    unordered_map<int,int>chosenInterns;
+    stack<int>freeI;
+    for(int i=0;i<interns.size();i++){
+      freeI.push(i);
+    }
+    vector<int>choise(interns.size(),0);
+  vector<unordered_map<int,int>>teamM;
+  for(vector<int> team: teams){
+    unordered_map<int,int> rank;
+    for(int i=0;i<teams.size();i++){
+      rank[team[i]]=i;
+    }
+    teamM.push_back(rank);
+  }
+  while(!freeI.empty()){
+    int internN= freeI.top();
+    freeI.pop();
+
+    vector<int> intern= interns[internN];
+    int teamp= intern[choise[internN]];
+    choise[internN]++;
+
+    if(chosenInterns.find(teamp) == chosenInterns.end()){
+      chosenInterns[teamp]= internN;
+      continue;
+    }
+
+    int prevI= chosenInterns[teamp];
+    int prevIR= teamM[teamp][prevI];
+    int currentIR= teamM[teamp][internN];
+
+    if(currentIR <prevIR){
+      freeI.push(prevI);
+      chosenInterns[teamp]= internN;
+    }
+    else{
+      freeI.push(internN);
+    }
+  }
+
+  vector<vector<int>> matches;
+  for(auto chosenI: chosenInterns){
+    matches.push_back({chosenI.second,chosenI.first});
+  }
+  return matches;
+  
+}
+
+
